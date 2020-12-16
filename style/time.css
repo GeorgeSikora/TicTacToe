@@ -1,0 +1,24 @@
+
+.time {
+    color: #eee;
+    padding-top: 2.2vh;
+    font-size: 6.5vh;
+    text-align: center;
+}
+
+.timeout {
+    color: #c84;
+    font-size: 2.5vh;
+    text-align: center;
+}
+
+.timeout .warning {
+    color: #f34;
+    transition: color 1s;
+    animation: blinking 0.2s infinite;
+}
+
+@keyframes blinking {
+    0%  { color: #f34;      }
+    50% { color: transparent; }
+}

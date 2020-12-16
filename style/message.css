@@ -1,0 +1,17 @@
+
+.bottom {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    width: 100%;
+    transform: translateX(-50%);
+    transition: bottom 1s;
+}
+
+.message {
+    color: #eee;
+    padding-bottom: 4.5vh;
+    font-size: 5.2vh;
+    text-align: center;
+    transition: color 0.5s;
+}
