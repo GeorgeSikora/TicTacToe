@@ -21,7 +21,7 @@ let timeout = 15;
 
 // end variables
 let end = false;
-let finalPos, finalDiagonal;
+let diagonalStart, diagonalEnd;
 
 function setup() {
 
@@ -33,16 +33,6 @@ function setup() {
 
     refreshTimers();
     secondTimer = millis() + 1000;
-}
-
-function setupDimensions() {
-    TILE_SIZE = VH * window.innerHeight/ROWS;
-
-    fieldSize.w = COLS * TILE_SIZE;
-    fieldSize.h = ROWS * TILE_SIZE;
-    
-    fieldCenter.x = width/2  - fieldSize.w/2;
-    fieldCenter.y = height/2 - fieldSize.h/2;
 }
 
 function draw() {
@@ -125,8 +115,20 @@ function draw() {
     if (end) {
         stroke(255, 0, 0, 100);
         strokeWeight(16);
-        line(finalPos.x, finalPos.y, finalPos.x + finalDiagonal.x, finalPos.y + finalDiagonal.y);
+        push();
+        line(diagonalStart.x * TILE_SIZE + TILE_SIZE/2, diagonalStart.y * TILE_SIZE + TILE_SIZE/2, diagonalEnd.x * TILE_SIZE + TILE_SIZE/2, diagonalEnd.y * TILE_SIZE + TILE_SIZE/2);
+        pop()
     }
+}
+
+function setupDimensions() {
+    TILE_SIZE = VH * window.innerHeight/ROWS;
+
+    fieldSize.w = COLS * TILE_SIZE;
+    fieldSize.h = ROWS * TILE_SIZE;
+    
+    fieldCenter.x = width/2  - fieldSize.w/2;
+    fieldCenter.y = height/2 - fieldSize.h/2;
 }
 
 function mousePressed() {
@@ -242,15 +244,8 @@ function checkFieldLines(playerChar) {
 
                     end = true;
 
-                    finalPos = {
-                        x: x * TILE_SIZE + TILE_SIZE / 2 * (dy | abs(dx)), 
-                        y: y * TILE_SIZE + TILE_SIZE / 2 * (dy | abs(dx))
-                    };
-
-                    finalDiagonal = {
-                        x: dx * (points - 1) * TILE_SIZE,
-                        y: dy * (points - 1) * TILE_SIZE
-                    };
+                    diagonalStart = {x: x, y: y};
+                    diagonalEnd = {x: x + dx * (points-1), y: y + dy * (points-1)};
                     
                     const charName = playerChar == 'o' ? 'kruhu' : 'kríže';
                     document.getElementById("message").innerHTML = 'Hráč s tvarem <span style="color: rgb(120, 170, 170)">' + charName + '</span> vyhrál!';  
