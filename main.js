@@ -9,7 +9,6 @@ let TILE_SIZE;
 
 /* GLOBAL VARIABLES */
 let field = [];
-let fieldConnections = [];
 let myChar = 'x'; // just 'x' or 'o'
 
 let fieldSize = {w: 0, h: 0};
@@ -30,13 +29,7 @@ function setup() {
 
     createCanvas(fieldSize.w + 10, fieldSize.h + 10);
 
-    for(var y = 0; y < ROWS; y++) {
-        field[y] = [];
-        for(var x = 0; x < COLS; x++) {
-            field[y][x] = ' ';
-            //field[y][x] = getRandomCell();
-        }
-    }
+    createField();
 
     refreshTimers();
     secondTimer = millis() + 1000;
@@ -98,7 +91,7 @@ function draw() {
 
     var mouse = getGrid();
 
-    if (isInsideField(mouse)) {
+    if (isInsideField(mouse) && !end) {
         var grid = {x: 0, y: 0};
 
         var x = mouse.x;
@@ -161,10 +154,10 @@ function fieldPressed(mouse) {
             myChar = 'x';
         }
 
-        document.getElementById("bottom").style.bottom = "-10vh";
+        document.getElementById("bottom").style.bottom = "-3vh";
         setTimeout(() => {
             document.getElementById("bottom").style.bottom = "0";
-        }, 100);
+        }, 150);
 
         timeout = 15;
         refreshTimers();
@@ -194,15 +187,21 @@ function checkFieldsLines() {
     checkFieldLines('o');
 }
 
+function keyPressed() {
+    /*
+    end = false;
+    createField();
+    checkFieldsLines();
+    */
+
+}
+
 function checkFieldLines(playerChar) {
     for(var y = 0; y < ROWS; y++) {
-        fieldConnections[y] = [];
         for(var x = 0; x < COLS; x++) {
-            var val = 0;
-
             if (getCell(x, y) == playerChar) {
 
-                var diagonals =  [0, 0, 0, 0];
+                var diagonals = [0, 0, 0, 0];
                 // Diagonal types by index
                 // 0 -
                 // 1 |
@@ -225,21 +224,33 @@ function checkFieldLines(playerChar) {
                 diagonals[3] += getDiagonal(x-1, y-1, -1, -1, playerChar, 0);
                 diagonals[3] += getDiagonal(x+1, y+1,  1,  1, playerChar, 0);
                 if (diagonals[3] > points) {points = diagonals[3]; longestDiagonal = 3;}
+
+                // involve also this single cell
+                points++;
                 
-                val += points + 1;
-                
-                if (val == WIN_LENGTH) {
+                /* GAME END, player win the game */
+                if (points >= WIN_LENGTH) {
                     
-                    var dx, dy;
+                    var dx, dy; // diagonal dir x, y
+
                     switch (longestDiagonal) {
-                        case 0: dx = 1; dy = 0; break;
-                        case 1: dx = 0; dy = 1 ; break;
-                        case 2:case 3: dx = 1; dy = 1; break;
+                        case 0: dx =  1; dy = 0; break;
+                        case 1: dx =  0; dy = 1; break;
+                        case 2: dx = -1; dy = 1; break;
+                        case 3: dx =  1; dy = 1; break;
                     }
 
                     end = true;
-                    finalPos = {x: x *TILE_SIZE +TILE_SIZE/2*(dy | dx), y: y *TILE_SIZE +TILE_SIZE/2*(dy | dx)};
-                    finalDiagonal = {x: dx *(WIN_LENGTH-1) *TILE_SIZE, y: dy *(WIN_LENGTH-1) *TILE_SIZE};
+
+                    finalPos = {
+                        x: x * TILE_SIZE + TILE_SIZE / 2 * (dy | abs(dx)), 
+                        y: y * TILE_SIZE + TILE_SIZE / 2 * (dy | abs(dx))
+                    };
+
+                    finalDiagonal = {
+                        x: dx * (points - 1) * TILE_SIZE,
+                        y: dy * (points - 1) * TILE_SIZE
+                    };
                     
                     const charName = playerChar == 'o' ? 'kruhu' : 'kríže';
                     document.getElementById("message").innerHTML = 'Hráč s tvarem <span style="color: rgb(120, 170, 170)">' + charName + '</span> vyhrál!';  
@@ -247,20 +258,8 @@ function checkFieldLines(playerChar) {
                     return;
                 }
             }
-
-            fieldConnections[y][x] = val;
         }
     }
-    console.log(fieldConnections);
-    /*
-    for (var y = 0; y < ROWS; y++) {
-        for (var x = 0; x < COLS; x++) {
-            if (fieldConnections[y][x] == 5) {
-                field[y][x] = 'w';
-            }
-        }
-    } 
-    */
 }
 
 function getDiagonal(x, y, dx, dy, playerChar, points) {
@@ -297,6 +296,16 @@ function getRandomCell() {
 function windowResized() {
     setupDimensions();
     resizeCanvas(fieldSize.w + 10, fieldSize.h + 10);
+}
+
+function createField() {
+    for(var y = 0; y < ROWS; y++) {
+        field[y] = [];
+        for(var x = 0; x < COLS; x++) {
+            field[y][x] = ' ';
+            //field[y][x] = getRandomCell();
+        }
+    }
 }
 
 function refreshTimers() {
