@@ -2,6 +2,15 @@
 * {
     margin: 0;
     padding: 0;
+
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-user-drag: none;
+    -webkit-touch-callout: none;
+
+    font-family: courier;
 }
 
 body {
@@ -14,43 +23,4 @@ body {
     top: 50%;
     transform: translate(-50%, -50%);
     z-index: -1;
-}
-
-.time {
-    color: #eee;
-    padding-top: 2.2vh;
-    font-size: 6.5vh;
-    text-align: center;
-}
-
-.timeout {
-    color: #c84;
-    font-size: 2.5vh;
-    text-align: center;
-}
-.timeout .warning {
-    color: #f34;
-    transition: color 1s;
-    animation: blinking 0.2s infinite;
-}
-
-@keyframes blinking {
-    0%  { color: #f34;      }
-    50% { color: transparent; }
-}
-
-.bottom {
-    position: fixed;
-    bottom: -10vh;
-    left: 50%;
-    transform: translateX(-50%);
-    transition: bottom 1s;
-}
-
-.message {
-    color: #eee;
-    padding-bottom: 4.5vh;
-    font-size: 5.2vh;
-    text-align: center;
-    transition: color 0.5s;
 }
