@@ -9,7 +9,14 @@
 </head>
 <body>
 
+    <p id="time" class="time"></p>
+    <div class="timeout">
+        <p id="timeout">timeout: <span id="timeout-value"></span>s</p>
+    </div>
 
+    <div id="bottom" class="bottom">
+        <p id="message" class="message"></p>
+    </div>
 
 </body>
 </html>
