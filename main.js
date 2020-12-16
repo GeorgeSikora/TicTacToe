@@ -2,12 +2,14 @@
 /* CONSTANTS */
 const ROWS = 10;
 const COLS = 12;
+const WIN_LENGTH = 5;
 const VH = 0.7; // viewport height percentage 0-1 value .. 0-100%
 
 let TILE_SIZE;
 
 /* GLOBAL VARIABLES */
 let field = [];
+let fieldConnections = [];
 let myChar = 'x'; // just 'x' or 'o'
 
 let fieldSize = {w: 0, h: 0};
@@ -17,6 +19,10 @@ let secondTimer = 0;
 
 let time = 600;
 let timeout = 15;
+
+// end variables
+let end = false;
+let finalPos, finalDiagonal;
 
 function setup() {
 
@@ -122,6 +128,12 @@ function draw() {
             rect(x, y, TILE_SIZE, TILE_SIZE);
         }
     }
+
+    if (end) {
+        stroke(255, 0, 0, 100);
+        strokeWeight(16);
+        line(finalPos.x, finalPos.y, finalPos.x + finalDiagonal.x, finalPos.y + finalDiagonal.y);
+    }
 }
 
 function mousePressed() {
@@ -130,6 +142,8 @@ function mousePressed() {
 }
 
 function fieldPressed(mouse) {
+    if (end) return;
+
     // indexes of array
     var x = ceil(mouse.x / TILE_SIZE);
     var y = ceil(mouse.y / TILE_SIZE);
@@ -154,6 +168,8 @@ function fieldPressed(mouse) {
 
         timeout = 15;
         refreshTimers();
+        
+        checkFieldsLines();
     }
 }
 
@@ -171,6 +187,96 @@ function getGrid() {
     vec.y += mouseY - middle.y % TILE_SIZE;
 
     return vec;
+}
+
+function checkFieldsLines() {
+    checkFieldLines('x');
+    checkFieldLines('o');
+}
+
+function checkFieldLines(playerChar) {
+    for(var y = 0; y < ROWS; y++) {
+        fieldConnections[y] = [];
+        for(var x = 0; x < COLS; x++) {
+            var val = 0;
+
+            if (getCell(x, y) == playerChar) {
+
+                var diagonals =  [0, 0, 0, 0];
+                // Diagonal types by index
+                // 0 -
+                // 1 |
+                // 2 / 
+                // 3 \ 
+                
+                diagonals[0] += getDiagonal(x+1, y  ,  1,  0, playerChar, 0);
+                diagonals[0] += getDiagonal(x-1, y  , -1,  0, playerChar, 0);
+                var longestDiagonal = 0;
+                var points = diagonals[0]; 
+                
+                diagonals[1] += getDiagonal(x  , y+1,  0,  1, playerChar, 0);
+                diagonals[1] += getDiagonal(x  , y-1,  0, -1, playerChar, 0);
+                if (diagonals[1] > points) {points = diagonals[1]; longestDiagonal = 1;}
+
+                diagonals[2] += getDiagonal(x+1, y-1,  1, -1, playerChar, 0);
+                diagonals[2] += getDiagonal(x-1, y+1, -1,  1, playerChar, 0);
+                if (diagonals[2] > points) {points = diagonals[2]; longestDiagonal = 2;}
+                
+                diagonals[3] += getDiagonal(x-1, y-1, -1, -1, playerChar, 0);
+                diagonals[3] += getDiagonal(x+1, y+1,  1,  1, playerChar, 0);
+                if (diagonals[3] > points) {points = diagonals[3]; longestDiagonal = 3;}
+                
+                val += points + 1;
+                
+                if (val == WIN_LENGTH) {
+                    
+                    var dx, dy;
+                    switch (longestDiagonal) {
+                        case 0: dx = 1; dy = 0; break;
+                        case 1: dx = 0; dy = 1 ; break;
+                        case 2:case 3: dx = 1; dy = 1; break;
+                    }
+
+                    end = true;
+                    finalPos = {x: x *TILE_SIZE +TILE_SIZE/2*(dy | dx), y: y *TILE_SIZE +TILE_SIZE/2*(dy | dx)};
+                    finalDiagonal = {x: dx *(WIN_LENGTH-1) *TILE_SIZE, y: dy *(WIN_LENGTH-1) *TILE_SIZE};
+                    
+                    const charName = playerChar == 'o' ? 'kruhu' : 'kríže';
+                    document.getElementById("message").innerHTML = 'Hráč s tvarem <span style="color: rgb(120, 170, 170)">' + charName + '</span> vyhrál!';  
+
+                    return;
+                }
+            }
+
+            fieldConnections[y][x] = val;
+        }
+    }
+    console.log(fieldConnections);
+    /*
+    for (var y = 0; y < ROWS; y++) {
+        for (var x = 0; x < COLS; x++) {
+            if (fieldConnections[y][x] == 5) {
+                field[y][x] = 'w';
+            }
+        }
+    } 
+    */
+}
+
+function getDiagonal(x, y, dx, dy, playerChar, points) {
+    if (getCell(x, y) == playerChar) {
+        points++;
+        return getDiagonal(x + dx, y + dy, dx, dy, playerChar, points);
+    } else {
+        return points;
+    }
+}
+
+function getCell(x, y) {
+    if (x >= 0 && y >= 0 && x < COLS && y < ROWS) {
+        return field[y][x];
+    }
+    return ' ';
 }
 
 function isInsideField(vec) {
